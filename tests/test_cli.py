@@ -39,7 +39,7 @@ def test_cursor_only_install_ignores_broken_codex_and_preserves_other_hooks(tmp_
 def test_sheet_command_exports_all_frames(tmp_path):
     assert main(["sheet", "--output", str(tmp_path)]) == 0
     manifest = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["character"].startswith("奶娃")
+    assert manifest["character"].startswith("奶蛙")
     assert (manifest["width"], manifest["height"]) == (160, 224)
     assert len(list(tmp_path.glob("*.png"))) == 185
     assert manifest["physical_frames"] == 208

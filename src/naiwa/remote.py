@@ -343,7 +343,7 @@ def _exchange(host, request, interactive=False):
         return message
     if completed.returncode != 0 or message is None:
         if interactive:
-            raise OSError("SSH 连接失败。密码只输给 OpenSSH，奶娃不保存。")
+            raise OSError("SSH 连接失败。密码只输给 OpenSSH，奶蛙不保存。")
         raise OSError("SSH 连接失败。没有提示或保存密码；请先为该主机配置密钥。")
     raise ValueError("远端目录不符合要求")
 
@@ -425,13 +425,13 @@ def main(argv=None):
         if not args.workspace:
             parser.error("remote install requires --workspace")
         install_host(args.host, args.workspace, args.root, args.data_dir, interactive=args.interactive)
-        print(f"已准备 {args.host} 上的 {args.workspace}。监听随奶娃启动，不保存服务器路径。")
+        print(f"已准备 {args.host} 上的 {args.workspace}。监听随奶蛙启动，不保存服务器路径。")
         if args.interactive:
-            print("启动奶娃时会弹出一个本机窗口。在那里输入一次服务器密码，这条连接保持到奶娃退出。")
+            print("启动奶蛙时会弹出一个本机窗口。在那里输入一次服务器密码，这条连接保持到奶蛙退出。")
         return 0
     if args.remote_command == "uninstall":
         uninstall_host(args.host, args.data_dir, interactive=args.interactive)
-        print(f"已移除 {args.host} 上奶娃自己的钩子。")
+        print(f"已移除 {args.host} 上奶蛙自己的钩子。")
         return 0
     receive(args.host, args.data_dir, args.interactive)
     return 0

@@ -178,7 +178,7 @@ def render_board(board, ratio, controls):
     deck = _Deck(width, height, ratio)
     deck.rect(0, 0, width-1, height-9, "#d4c7a3", "#18262b")
     deck.rect(3, 3, width-7, height-15, "#eee1bb", "#8b816d")
-    deck.text(14, 4, 245, "tiny", "AGENT STATUS / 奶娃", "#30444a")
+    deck.text(14, 4, 245, "tiny", "AGENT STATUS / 奶蛙", "#30444a")
     deck.text(width-83, 4, 65, "meta", "全览" if board.focused else "收起", "#30444a", Qt.AlignmentFlag.AlignRight)
     deck.control(controls, "all" if board.focused else "close", "", width-83, 1, 70, 20)
     for at in (5, width-8):

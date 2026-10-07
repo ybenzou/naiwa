@@ -180,7 +180,7 @@ class NaiwaWindow(QWidget):
         self._io_error = False
         self._closed = False
         self.decoration = DecorationWindow()
-        self.setWindowTitle("奶娃")
+        self.setWindowTitle("奶蛙")
         self.setWindowFlags(window_flags())
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)

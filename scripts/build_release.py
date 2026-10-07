@@ -86,7 +86,7 @@ def main() -> None:
     digest = hashlib.sha256(wheel.read_bytes()).hexdigest()
     wheel.with_suffix(".sha256").write_text(f"{digest}  {wheel.name}\n", encoding="ascii")
     wheel.with_suffix(".usage.txt").write_text(
-        f"奶娃 {version} / Windows / Python 3.11+ (64 位)\n\n"
+        f"奶蛙 {version} / Windows / Python 3.11+ (64 位)\n\n"
         "在 wheel 文件所在目录打开 PowerShell，依次运行：\n"
         f"python -m pip install ./{wheel.name}\n"
         "naiwa install\nnaiwa-desktop\n\n"
@@ -96,7 +96,7 @@ def main() -> None:
         "Codex 钩子需审查并信任；接入结果以真实扩展回合的新事件为准。\n"
         "找不到 naiwa 命令时，用 python -m naiwa install 接入、python -m naiwa 启动。\n"
         "demo 预览：naiwa demo；排查：naiwa doctor；版本：naiwa --version\n"
-        "退出：右键系统托盘中的奶娃，选择退出。\n"
+        "退出：右键系统托盘中的奶蛙，选择退出。\n"
         "移除钩子：naiwa uninstall；卸载包：python -m pip uninstall naiwa\n"
         "升级前先退出，再 pip install --upgrade 新 wheel，重新 naiwa install 并启动。\n"
         "位置和显示偏好保存在用户目录 .agent-pet，升级保留。\n",

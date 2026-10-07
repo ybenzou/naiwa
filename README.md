@@ -1,6 +1,6 @@
-# 奶娃 · Naiwa
+# 奶蛙 · Naiwa
 
-Windows 桌面上的孟菲斯像素奶娃，显示 Cursor Agent 和 VS Code Codex 的运行状态。多个会话各有一支手和工作区标签，左侧 Cursor、右侧 Codex；提示栏分成两列，区分工作、工具、等你、完成和出错。无任务时侧躺，支持拖动、记住位置和持续显示详情。
+Windows 桌面上的孟菲斯像素奶蛙，显示 Cursor Agent 和 VS Code Codex 的运行状态。多个会话各有一支手和工作区标签，左侧 Cursor、右侧 Codex；提示栏分成两列，区分工作、工具、等你、完成和出错。无任务时侧躺，支持拖动、记住位置和持续显示详情。
 
 ## 直接安装
 
@@ -18,14 +18,14 @@ naiwa-desktop
 
 `naiwa install` 合并并备份当前用户的 IDE 钩子配置。Codex 用户级钩子需要在 `/hooks` 中审查和信任；是否接入以扩展真实回合的新事件为准。仅使用一边时，运行 `naiwa install --source cursor` 或 `naiwa install --source codex`。
 
-找不到 `naiwa` 命令时，用 `python -m naiwa install` 接入、`python -m naiwa` 启动。关闭奶娃时，右键系统托盘图标选择“退出”。
+找不到 `naiwa` 命令时，用 `python -m naiwa install` 接入、`python -m naiwa` 启动。关闭奶蛙时，右键系统托盘图标选择“退出”。
 
 当前通过 GitHub 分发本项目；尚未发布到 PyPI，不要用 `pip install naiwa` 安装同名的其他项目。
 
 ## 使用
 
-- 拖动身体或手移动奶娃；重启恢复位置。
-- 单击身体或托盘“奶娃说两句”，展开或收起两列提示栏。
+- 拖动身体或手移动奶蛙；重启恢复位置。
+- 单击身体或托盘“奶蛙说两句”，展开或收起两列提示栏。
 - 单击手、工作区标签或卡片，查看该会话的最近动作。
 - 多窗口、相同工作区的不同会话使用稳定编号区分。
 - `naiwa demo` 可先预览动画，无需接入 IDE。
@@ -47,7 +47,7 @@ naiwa doctor
 naiwa remote --host example-server --interactive
 ```
 
-监听只读取已经存在的远端采集记录，不自动上传或重新部署采集器。密码输入给 OpenSSH；奶娃不读取或保存密码。登录后窗口自动隐藏，手动关闭该窗口会停止监听。
+监听只读取已经存在的远端采集记录，不自动上传或重新部署采集器。密码输入给 OpenSSH；奶蛙不读取或保存密码。登录后窗口自动隐藏，手动关闭该窗口会停止监听。
 
 需要首次部署采集器时才运行：
 
@@ -59,14 +59,14 @@ naiwa remote install --host example-server --workspace SAMPLE_PROJECT --interact
 
 ## 升级和移除
 
-先在托盘退出奶娃，再安装新 wheel、重新运行 `naiwa install` 并启动。个人设置默认位于 `%USERPROFILE%/.agent-pet`，升级保留；不要把该目录上传到仓库或发送给别人。
+先在托盘退出奶蛙，再安装新 wheel、重新运行 `naiwa install` 并启动。个人设置默认位于 `%USERPROFILE%/.agent-pet`，升级保留；不要把该目录上传到仓库或发送给别人。
 
 ```powershell
 naiwa uninstall
 python -m pip uninstall naiwa
 ```
 
-移除钩子只移除奶娃的处理器，保留其他处理器。
+移除钩子只移除奶蛙的处理器，保留其他处理器。
 
 ## 开发、打包与分享
 

@@ -68,21 +68,21 @@ def _run(root: Path | None, placeholder: bool, zoom: int, demo: bool) -> int:
         held = QLockFile(str(base / ("demo.lock" if demo else "desktop.lock")))
         held.setStaleLockTime(0)
         if not held.tryLock(50):
-            print("奶娃已经在运行")
+            print("奶蛙已经在运行")
             return 0
         held.unlock()
         if _detach_desktop(sys.argv[1:]):
-            print("奶娃已在后台运行，这个终端可以继续用。弹出的窗口里再输入一次服务器密码。")
+            print("奶蛙已在后台运行，这个终端可以继续用。弹出的窗口里再输入一次服务器密码。")
             return 0
     app = QApplication([sys.argv[0]])
-    app.setApplicationName("奶娃")
+    app.setApplicationName("奶蛙")
     app.setQuitOnLastWindowClosed(False)
     # QLockFile arbitrates startup as well as the running process, avoiding a socket race.
     from PySide6.QtCore import QLockFile
     lock = QLockFile(str(base / ("demo.lock" if demo else "desktop.lock")))
     lock.setStaleLockTime(0)
     if not lock.tryLock(100):
-        print("奶娃已经在运行")
+        print("奶蛙已经在运行")
         return 0
     from naiwa.motion import prepare_animation
     prepare_animation()
@@ -90,7 +90,7 @@ def _run(root: Path | None, placeholder: bool, zoom: int, demo: bool) -> int:
     app.aboutToQuit.connect(window.close)
     tray = QSystemTrayIcon(QIcon(QPixmap.fromImage(_image(pose_frames("idle")[0], 2))), app)
     menu = QMenu()
-    menu.addAction("奶娃说两句", window.toggle_details)
+    menu.addAction("奶蛙说两句", window.toggle_details)
     menu.addAction("回到主屏", window.reset_position)
     sizes = menu.addMenu("大小")
     group = QActionGroup(sizes)
@@ -104,7 +104,7 @@ def _run(root: Path | None, placeholder: bool, zoom: int, demo: bool) -> int:
     menu.addSeparator()
     menu.addAction("退出", app.quit)
     tray.setContextMenu(menu)
-    tray.setToolTip("奶娃 · 演示" if demo else "奶娃")
+    tray.setToolTip("奶蛙 · 演示" if demo else "奶蛙")
     tray.activated.connect(lambda reason: window.toggle_details() if reason == QSystemTrayIcon.ActivationReason.Trigger else None)
     tray.show()
     if demo:
@@ -129,7 +129,7 @@ def _run(root: Path | None, placeholder: bool, zoom: int, demo: bool) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="奶娃：观察 Cursor 和 VS Code Codex 的像素桌宠")
+    parser = argparse.ArgumentParser(description="奶蛙：观察 Cursor 和 VS Code Codex 的像素桌宠")
     parser.add_argument("--version", action="version", version=f"naiwa {__version__}")
     parser.add_argument("--data-dir", type=Path, help="默认 %%USERPROFILE%%/.agent-pet 或 NAIWA_HOME")
     commands = parser.add_subparsers(dest="command")
@@ -168,7 +168,7 @@ def main(argv: list[str] | None = None) -> int:
                 uninstall_cursor(default_cursor_path())
             if args.source in {"all", "codex"}:
                 uninstall_codex(default_codex_path())
-            print("已移除奶娃的观察钩子；其他钩子保留。")
+            print("已移除奶蛙的观察钩子；其他钩子保留。")
             return 0
         if args.command in {"probe", "doctor"}:
             from naiwa.probe import report, watch, write_environment

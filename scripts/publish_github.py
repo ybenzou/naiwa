@@ -96,7 +96,7 @@ def publish(repo: str, wheel: Path, source: Path) -> str:
         if error.code != 404:
             raise
         release = api(token, base + "/releases", "POST", payload={
-            "tag_name": tag, "target_commitish": head, "name": "Naiwa " + version,
+            "tag_name": tag, "target_commitish": head, "name": "奶蛙 · Naiwa " + version,
             "draft": True, "prerelease": False,
             "body": "Windows / Python 3.11+ (64-bit). Animation assets are included.\n\n"
                     "```powershell\npython -m pip install https://github.com/" + repo +

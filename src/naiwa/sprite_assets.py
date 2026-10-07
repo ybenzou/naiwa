@@ -175,7 +175,7 @@ def export_assets(directory: Path) -> None:
             if pack.exists():
                 shutil.copyfile(pack, directory/name)
     (directory/"manifest.json").write_text(json.dumps({
-        "character": "奶娃（奶蛙二创形象）", "width": WIDTH, "height": HEIGHT,
+        "character": "奶蛙", "width": WIDTH, "height": HEIGHT,
         "anchor": ANCHOR, "durations_ms": DURATIONS, "palette": sorted(PALETTE),
         "sprite_version": 3, "art": "imagegen redraw, original thinking face proportions",
         "composition_version": 2,
