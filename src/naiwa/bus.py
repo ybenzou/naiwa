@@ -160,9 +160,8 @@ def _last_seq(path: Path, root: Path | None) -> int:
 
 
 def _compact(root: Path | None) -> None:
-    from naiwa.phase import PhaseMachine
     path = events_path(root)
-    machine = PhaseMachine.from_snapshot(read_snapshot(root))
+    machine = EventReader(root)._restore()
     machine.replay(read_events(path))
     # Snapshot first; seq filtering makes a crash between these writes replay-safe.
     atomic_json(snapshot_path(root), machine.snapshot())
@@ -229,6 +228,80 @@ class EventReader:
         self.loaded = False
         self.mark = b""
         self.remote_clock_offsets = {}
+
+    def _restore(self):
+        from naiwa.phase import PhaseMachine, ACTIVE
+        base = runtime_dir(self.root)
+        snapshot = read_snapshot(self.root)
+        legacy = snapshot.get("phase_rules", 0) < 3 if isinstance(snapshot, dict) else True
+        machine = PhaseMachine.from_snapshot(snapshot)
+        archived = read_events(base/"events.prev.jsonl")
+        current = read_events(events_path(self.root))
+        journal = archived+current
+        # The pet's validated state is separate from a writer's compaction
+        # snapshot. A still-authenticated pre-upgrade writer can have older
+        # generation rules; restarting the UI must not restore those rules.
+        try:
+            cached = json.loads((base/"reader-state.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            cached = {}
+        if isinstance(cached, dict) and cached.get("reader_schema") == 1:
+            saved = PhaseMachine.from_snapshot(cached)
+            latest = max([machine.last_seq]+[event.seq for event in journal])
+            gap = sorted({event.seq for event in journal if saved.last_seq < event.seq <= latest})
+            if (saved.last_seq <= latest and
+                    (saved.last_seq == latest or gap and gap[0] == saved.last_seq+1
+                     and gap[-1] == latest and len(gap) == latest-saved.last_seq)):
+                machine = saved
+                legacy = False
+                missing = [event for event in archived if event.seq > machine.last_seq]
+                machine.replay(self._remote_clock(machine, missing, restored=True))
+
+        # Hook diagnostics contain only already-sanitized event identifiers and
+        # outcomes. They retain real local Stop evidence even when a high-volume
+        # SSH journal has rotated it out. Prefer actual bus rows when present.
+        evidence = {}
+        for name in ("probe-keys.prev.jsonl", "probe-keys.jsonl"):
+            try:
+                lines = (base/name).read_text(encoding="utf-8").splitlines()
+            except OSError:
+                continue
+            for line in lines:
+                try:
+                    row = json.loads(line)
+                    if row.get("source") != "cursor" or row.get("observed") is not True:
+                        continue
+                    event = BusEvent.from_dict({key: row[key] for key in (
+                        "source", "session_id", "turn_id", "event", "end_reason", "seq", "ts", "workspace_name") if key in row})
+                    if event.seq:
+                        evidence[event.seq] = event
+                except (ValueError, TypeError, AttributeError):
+                    continue
+        for event in journal:
+            if event.source == "cursor":
+                evidence[event.seq] = event
+        relevant = sorted((event for event in evidence.values() if event.seq <= machine.last_seq), key=lambda e: e.seq)
+        replay = PhaseMachine()
+        replay.replay(relevant)
+        canonical, thoughts = {}, {}
+        for event in relevant:
+            key = machine.key(event.source, event.session_id)
+            target = thoughts if event.event == "heartbeat" else canonical
+            target.setdefault(key, set()).add(event.turn_id)
+        for key, turn in list(machine.turns.items()):
+            corrected = replay.turns.get(key)
+            if (turn.source == "cursor" and turn.phase in ACTIVE and corrected is not None
+                    and (turn.turn_id in thoughts.get(key, ()) or
+                         legacy and corrected.turn_id in turn.previous_turn_ids
+                         and not turn.tools and not turn.action_count and corrected.action_count > 0)
+                    and turn.turn_id not in canonical.get(key, ())
+                    and corrected.turn_id != turn.turn_id
+                    and corrected.last_seq >= turn.last_seq):
+                corrected.number = turn.number
+                corrected.workspace_name = corrected.workspace_name or turn.workspace_name
+                corrected.workspace_id = corrected.workspace_id or turn.workspace_id
+                machine.turns[key] = corrected
+        return machine
 
     def _remote_clock(self, machine, events, restored=False):
         """Migrate future-dated events from an already authenticated old reader.
@@ -310,7 +383,7 @@ class EventReader:
                             machine.replay(self._remote_clock(machine, missing))
                             kept_live = True
                 if not kept_live:
-                    machine = PhaseMachine.from_snapshot(read_snapshot(self.root))
+                    machine = self._restore()
                 self.offset = 0
                 self.identity = identity
                 self.loaded = True

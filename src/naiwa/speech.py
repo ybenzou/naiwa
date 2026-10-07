@@ -62,7 +62,7 @@ def state_label(block):
     if block.activity == "compacting" and block.pose == "working":
         return "整理上下文"
     return {"working": "正在思考", "tool": "执行工具", "done": "已完成", "stopped": "本轮结束",
-            "error": "出错", "stale": "信号延迟"}.get(block.pose, "状态提示")
+            "error": "出错", "stale": "状态未更新"}.get(block.pose, "状态提示")
 
 class _Deck:
     def __init__(self, width, height, ratio):

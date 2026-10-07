@@ -270,6 +270,9 @@ class NaiwaWindow(QWidget):
                 self._health_since = now
                 try:
                     view = self._view()
+                    if getattr(self, "_saved_reader_seq", None) != self.machine.last_seq:
+                        atomic_json(self.root/"reader-state.json", {"reader_schema": 1, **self.machine.snapshot()})
+                        self._saved_reader_seq = self.machine.last_seq
                     atomic_json(self.root/"reader-health.json", {"pid": os.getpid(), "last_seq": self.machine.last_seq,
                         "ts": time.time(), "read_error": self._io_error,
                         "pose": view.pose, "animation_pose": self._motion.pose,

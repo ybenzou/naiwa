@@ -472,7 +472,7 @@ class PhaseMachine:
         return rows
 
     def snapshot(self) -> dict:
-        return {"version": 2, "last_seq": self.last_seq, "turns": [t.to_dict() for t in self.turns.values()]}
+        return {"version": 2, "phase_rules": 3, "last_seq": self.last_seq, "turns": [t.to_dict() for t in self.turns.values()]}
 
     @classmethod
     def from_snapshot(cls, payload: dict | None) -> "PhaseMachine":

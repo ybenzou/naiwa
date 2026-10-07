@@ -9,12 +9,12 @@ Windows 桌面上的孟菲斯像素奶蛙，显示 Cursor Agent 和 VS Code Code
 在 PowerShell 中运行：
 
 ```powershell
-python -m pip install https://github.com/ybenzou/naiwa/releases/download/v0.8.8/naiwa-0.8.8-py3-none-any.whl
+python -m pip install https://github.com/ybenzou/naiwa/releases/download/v0.8.9/naiwa-0.8.9-py3-none-any.whl
 naiwa install
 naiwa-desktop
 ```
 
-也可从 [Releases](https://github.com/ybenzou/naiwa/releases) 下载 wheel，然后运行 `python -m pip install ./naiwa-0.8.8-py3-none-any.whl`。
+也可从 [Releases](https://github.com/ybenzou/naiwa/releases) 下载 wheel，然后运行 `python -m pip install ./naiwa-0.8.9-py3-none-any.whl`。
 
 `naiwa install` 合并并备份当前用户的 IDE 钩子配置。Codex 用户级钩子需要在 `/hooks` 中审查和信任；是否接入以扩展真实回合的新事件为准。仅使用一边时，运行 `naiwa install --source cursor` 或 `naiwa install --source codex`。
 
@@ -76,7 +76,7 @@ python -m pip uninstall naiwa
 python -m pip install -e ".[dev,release]"
 python -m pytest -q
 python scripts/build_release.py
-python scripts/audit_share.py artifacts/naiwa-0.8.8-py3-none-any.whl
+python scripts/audit_share.py artifacts/naiwa-0.8.9-py3-none-any.whl
 ```
 
 `artifacts/` 生成 wheel、SHA-256 校验文件和使用说明。将这三个文件上传到 GitHub Release 即可分享。`scripts/export_share.py` 按允许的文件清单生成独立源码目录，不复制父仓库历史、运行记录、SSH 配置、预览截图或原画实验稿。

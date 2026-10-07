@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "naiwa"
-version = "0.8.8"
+version = "0.8.9"
 description = "Memphis pixel desktop pet for Cursor and VS Code Codex agent status"
 requires-python = ">=3.11"
 readme = "README.md"
