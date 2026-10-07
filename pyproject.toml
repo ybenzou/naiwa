@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "naiwa"
+version = "0.8.7"
+description = "Memphis pixel desktop pet for Cursor and VS Code Codex agent status"
+requires-python = ">=3.11"
+readme = "README.md"
+dependencies = ["PySide6>=6.6"]
+classifiers = [
+    "Environment :: Win32 (MS Windows)",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Desktop Environment",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+release = ["build>=1.2", "twine>=5"]
+
+[project.scripts]
+naiwa = "naiwa.__main__:main"
+
+[project.gui-scripts]
+naiwa-desktop = "naiwa.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.package-data]
+naiwa = ["assets/*.png", "assets/*.json", "assets/*.ps1"]
+
+[tool.setuptools.exclude-package-data]
+naiwa = ["assets/motion-contours.json", "assets/rig-*.png", "assets/articulated-parts.json", "assets/rigid-body.png", "assets/rigid-body.json"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

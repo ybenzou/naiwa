@@ -1,0 +1,38 @@
+{
+  "rest": {
+    "source": "rest-strip-v1.png",
+    "sha256": "5b2963fca2eb4351781a2ea3fe538ae1333c3494f9628ca0513afbd29df9f38e",
+    "size": [
+      240,
+      224
+    ],
+    "anchor": [
+      120,
+      208
+    ],
+    "assets": [
+      "rest-0",
+      "rest-1",
+      "rest-2",
+      "rest-3"
+    ]
+  },
+  "arm": {
+    "source": "limb-strip-v1.png",
+    "sha256": "413f46cb5286c5c7f3956b82bca6f740ba7474ac899f16c6e03c42dd278a02b7",
+    "size": [
+      80,
+      88
+    ],
+    "anchor": [
+      14,
+      77
+    ],
+    "assets": [
+      "arm-working",
+      "arm-waiting",
+      "arm-done",
+      "arm-droop"
+    ]
+  }
+}

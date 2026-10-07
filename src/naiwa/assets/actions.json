@@ -1,0 +1,30 @@
+{
+  "source": "actions-atlas-v1.png",
+  "sha256": "da19bb2ed1fe84296248310a5ff080a603128c3ea3d884f5134012441260f499",
+  "assets": [
+    "motion-read-0",
+    "motion-read-1",
+    "motion-read-2",
+    "motion-read-3",
+    "motion-read-4",
+    "motion-read-5",
+    "motion-type-0",
+    "motion-type-1",
+    "motion-type-2",
+    "motion-type-3",
+    "motion-type-4",
+    "motion-type-5",
+    "motion-write-0",
+    "motion-write-1",
+    "motion-write-2",
+    "motion-write-3",
+    "motion-write-4",
+    "motion-write-5"
+  ],
+  "size": [
+    160,
+    224
+  ],
+  "fps": 25,
+  "sampling": "nearest-neighbour"
+}

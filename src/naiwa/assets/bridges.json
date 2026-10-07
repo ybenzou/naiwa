@@ -1,0 +1,37 @@
+{
+  "source": "transitions-atlas-v1.png",
+  "sha256": "8f54dcc0e244e58513aaacc2c714ba735d2bec9312e0f0018d76be342766d130",
+  "generator": "built-in imagegen",
+  "assets": [
+    "bridge-book-0",
+    "bridge-book-1",
+    "bridge-book-2",
+    "bridge-book-3",
+    "bridge-book-4",
+    "bridge-book-5",
+    "bridge-keyboard-0",
+    "bridge-keyboard-1",
+    "bridge-keyboard-2",
+    "bridge-keyboard-3",
+    "bridge-keyboard-4",
+    "bridge-keyboard-5",
+    "bridge-notebook-0",
+    "bridge-notebook-1",
+    "bridge-notebook-2",
+    "bridge-notebook-3",
+    "bridge-notebook-4",
+    "bridge-notebook-5",
+    "bridge-chin-0",
+    "bridge-chin-1",
+    "bridge-chin-2",
+    "bridge-chin-3",
+    "bridge-chin-4",
+    "bridge-chin-5"
+  ],
+  "size": [
+    160,
+    224
+  ],
+  "identity_head": "idle-0.png",
+  "sampling": "nearest-neighbour"
+}

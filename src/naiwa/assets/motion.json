@@ -1,0 +1,27 @@
+{
+  "source": "motion-atlas-v1.png",
+  "sha256": "d35693e174bba29b0216acc7ff5013e80e17b7e61c6a3b3f0d6b78dd996d37a6",
+  "assets": [
+    "motion-rise-0",
+    "motion-rise-1",
+    "motion-rise-2",
+    "motion-rise-3",
+    "motion-rise-4",
+    "motion-rise-5",
+    "motion-tool-0",
+    "motion-tool-1",
+    "motion-tool-2",
+    "motion-tool-3",
+    "motion-tool-4",
+    "motion-tool-5",
+    "motion-stretch-0",
+    "motion-stretch-1",
+    "motion-stretch-2",
+    "motion-stretch-3",
+    "motion-stretch-4",
+    "motion-stretch-5"
+  ],
+  "fps": 25,
+  "sampling": "nearest-neighbour",
+  "palette": "shared"
+}
