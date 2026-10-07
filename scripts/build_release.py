@@ -49,6 +49,8 @@ def check_wheel(wheel: Path, version: str) -> None:
         entry = archive.read(f"naiwa-{version}.dist-info/entry_points.txt").decode("utf-8")
         if "naiwa = naiwa.__main__:main" not in entry or "naiwa-desktop = naiwa.__main__:main" not in entry:
             raise ValueError("Missing desktop entry points")
+        if "naiwa-askpass = naiwa.askpass:main" not in entry:
+            raise ValueError("Missing GUI OpenSSH login companion")
         print(f"Validated {sum(p.endswith('.png') for p in files)} PNG assets and CLI/GUI entry points")
     report = audit(wheel, local_markers())
     if not report["clean"]:

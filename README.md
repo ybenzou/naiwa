@@ -9,12 +9,12 @@ Windows 桌面上的孟菲斯像素奶蛙，显示 Cursor Agent 和 VS Code Code
 在 PowerShell 中运行：
 
 ```powershell
-python -m pip install https://github.com/ybenzou/naiwa/releases/download/v0.8.7/naiwa-0.8.7-py3-none-any.whl
+python -m pip install https://github.com/ybenzou/naiwa/releases/download/v0.8.8/naiwa-0.8.8-py3-none-any.whl
 naiwa install
 naiwa-desktop
 ```
 
-也可从 [Releases](https://github.com/ybenzou/naiwa/releases) 下载 wheel，然后运行 `python -m pip install ./naiwa-0.8.7-py3-none-any.whl`。
+也可从 [Releases](https://github.com/ybenzou/naiwa/releases) 下载 wheel，然后运行 `python -m pip install ./naiwa-0.8.8-py3-none-any.whl`。
 
 `naiwa install` 合并并备份当前用户的 IDE 钩子配置。Codex 用户级钩子需要在 `/hooks` 中审查和信任；是否接入以扩展真实回合的新事件为准。仅使用一边时，运行 `naiwa install --source cursor` 或 `naiwa install --source codex`。
 
@@ -47,7 +47,9 @@ naiwa doctor
 naiwa remote --host example-server --interactive
 ```
 
-监听只读取已经存在的远端采集记录，不自动上传或重新部署采集器。密码输入给 OpenSSH；奶蛙不读取或保存密码。登录后窗口自动隐藏，手动关闭该窗口会停止监听。
+监听只读取已经存在的远端采集记录，不自动上传或重新部署采集器。Windows 上监听在后台运行，不打开终端。需要认证时显示奶蛙登录卡片；密码通过本机内存管道交给 OpenSSH，不写入配置、日志或事件文件。关闭或取消卡片会取消这次登录；断线后在托盘菜单“SSH 连接”中点击“连接 / 重试”，不会循环弹出密码窗口。
+
+升级时正在运行的旧监听会继续保留。在“SSH 连接”中点击“切换图形登录”，才会结束旧连接、用新卡片重新登录一次。
 
 需要首次部署采集器时才运行：
 
@@ -74,7 +76,7 @@ python -m pip uninstall naiwa
 python -m pip install -e ".[dev,release]"
 python -m pytest -q
 python scripts/build_release.py
-python scripts/audit_share.py artifacts/naiwa-0.8.7-py3-none-any.whl
+python scripts/audit_share.py artifacts/naiwa-0.8.8-py3-none-any.whl
 ```
 
 `artifacts/` 生成 wheel、SHA-256 校验文件和使用说明。将这三个文件上传到 GitHub Release 即可分享。`scripts/export_share.py` 按允许的文件清单生成独立源码目录，不复制父仓库历史、运行记录、SSH 配置、预览截图或原画实验稿。

@@ -286,7 +286,7 @@ def test_pet_starts_the_named_host_stream(tmp_path, monkeypatch):
     assert flags == subprocess.CREATE_NO_WINDOW
 
 
-def test_password_session_opens_a_console_and_is_not_stored(tmp_path, monkeypatch):
+def test_password_session_uses_hidden_gui_login_and_is_not_stored(tmp_path, monkeypatch):
     (tmp_path/"remotes.json").write_text(json.dumps(
         {"hosts": [{"host": "example-server", "workspace": "SAMPLE_PROJECT", "interactive": True}]}), encoding="utf-8")
     started = []
@@ -294,12 +294,13 @@ def test_password_session_opens_a_console_and_is_not_stored(tmp_path, monkeypatc
     from naiwa.remote import start_configured
     start_configured(tmp_path)
     args, flags = started[0]
-    assert args[-1] == "--interactive"
+    assert args[-2:] == ["--interactive", "--gui"]
     assert not any(part.lower() in {"password", "passwd"} or "password=" in part.lower() for part in args)
-    assert flags == subprocess.CREATE_NEW_CONSOLE
+    assert flags == subprocess.CREATE_NO_WINDOW
 
     seen = {}
-    def fake_run(args, input, stdout, stderr, timeout, env):
+    monkeypatch.setattr("naiwa.askpass.helper_path", lambda: tmp_path/"naiwa-askpass.exe")
+    def fake_run(args, input, stdout, stderr, timeout, env, **kwargs):
         seen["args"] = args
         seen["stderr"] = stderr
         seen["timeout"] = timeout
@@ -311,7 +312,7 @@ def test_password_session_opens_a_console_and_is_not_stored(tmp_path, monkeypatc
     monkeypatch.setattr("naiwa.remote.subprocess.run", fake_run)
     monkeypatch.setattr("naiwa.remote.bundle_bytes", lambda: b"bundle")
     install_host("example-server", "SAMPLE_PROJECT", root=tmp_path, interactive=True)
-    assert "BatchMode=yes" not in seen["args"] and seen["stderr"] is None and seen["timeout"] == 180
+    assert "BatchMode=yes" not in seen["args"] and seen["stderr"] == subprocess.DEVNULL and seen["timeout"] == 180
     saved = json.loads((tmp_path/"remotes.json").read_text(encoding="utf-8"))
     assert saved["hosts"] == [{"host": "example-server", "workspace": "SAMPLE_PROJECT", "interactive": True}]
 

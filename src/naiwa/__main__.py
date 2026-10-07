@@ -72,7 +72,7 @@ def _run(root: Path | None, placeholder: bool, zoom: int, demo: bool) -> int:
             return 0
         held.unlock()
         if _detach_desktop(sys.argv[1:]):
-            print("奶蛙已在后台运行，这个终端可以继续用。弹出的窗口里再输入一次服务器密码。")
+            print("奶蛙已在后台运行，这个终端可以继续用。需要认证时会显示奶蛙登录卡片。")
             return 0
     app = QApplication([sys.argv[0]])
     app.setApplicationName("奶蛙")
@@ -92,6 +92,15 @@ def _run(root: Path | None, placeholder: bool, zoom: int, demo: bool) -> int:
     menu = QMenu()
     menu.addAction("奶蛙说两句", window.toggle_details)
     menu.addAction("回到主屏", window.reset_position)
+    if not demo:
+        from naiwa.connections import ConnectionsDialog
+        connections = ConnectionsDialog(base)
+        app.aboutToQuit.connect(connections.close)
+        def show_connections():
+            connections.show()
+            connections.raise_()
+            connections.activateWindow()
+        menu.addAction("SSH 连接", show_connections)
     sizes = menu.addMenu("大小")
     group = QActionGroup(sizes)
     for size in (1, 2, 3):
@@ -156,6 +165,7 @@ def main(argv: list[str] | None = None) -> int:
     remote.add_argument("--workspace", default="")
     remote.add_argument("--root", default="")
     remote.add_argument("--interactive", action="store_true")
+    remote.add_argument("--gui", action="store_true")
     remote.add_argument("--data-dir", type=Path, default=argparse.SUPPRESS)
     parser.add_argument("--placeholder", action="store_true")
     parser.add_argument("--zoom", type=int, choices=(1, 2, 3), default=1)
@@ -188,6 +198,8 @@ def main(argv: list[str] | None = None) -> int:
                 forwarded += ["--root", args.root]
             if args.interactive:
                 forwarded.append("--interactive")
+            if args.gui:
+                forwarded.append("--gui")
             data_dir = getattr(args, "data_dir", None)
             if data_dir is not None:
                 forwarded += ["--data-dir", str(data_dir)]

@@ -208,15 +208,18 @@ def _request(command, cursor=None, workspace="", explicit_root=""):
             "workspace": workspace, "root": explicit_root}
 
 
-def receive(host, root, interactive=False):
+def receive(host, root, interactive=False, gui=False):
     base = runtime_dir(root)
     identity = host_id(host)
     checkpoint = base/("remote-"+identity+"-cursor.json")
     health = base/("remote-"+identity+"-health.json")
     health_fields = {}
+    started_at = time.time()
     def status(state, **extra):
         health_fields.update(extra)
-        atomic_json(health, {"host": host, "pid": os.getpid(), "state": state, "ts": time.time(), **health_fields})
+        atomic_json(health, {"host": host, "pid": os.getpid(), "state": state, "ts": time.time(),
+                            "started_at": started_at, "auth_ui": "gui" if gui else "terminal" if interactive else "batch",
+                            **health_fields})
     try:
         lock = BusLock(base/("remote-"+identity+".lock"), timeout=.05)
         lock.__enter__()
@@ -225,13 +228,19 @@ def receive(host, root, interactive=False):
     child = None
     try:
         while True:
-            console_visible(True) if interactive else None
+            console_visible(True) if interactive and not gui else None
             status("connecting")
             try:
                 cursor = json.loads(checkpoint.read_text()) if checkpoint.exists() else {}
-                child = subprocess.Popen(ssh_arguments(host, interactive, read_only=True), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                         env=ssh_env(),
-                                         creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" and not interactive else 0)
+                environment = ssh_env()
+                arguments = ssh_arguments(host, interactive, read_only=True)
+                if gui:
+                    from naiwa.askpass import environment as gui_environment
+                    environment = gui_environment(host, environment)
+                    arguments[1:1] = ["-o", "NumberOfPasswordPrompts=1"]
+                child = subprocess.Popen(arguments, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                         stderr=subprocess.DEVNULL if gui else None, env=environment,
+                                         creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" and (gui or not interactive) else 0)
                 child.stdin.write((json.dumps({"seq": cursor.get("seq", 0), "epoch": cursor.get("epoch", "")})+"\n").encode())
                 child.stdin.close()
                 for line in iter(child.stdout.readline, b""):
@@ -244,7 +253,7 @@ def receive(host, root, interactive=False):
                         link_event(base, host, False)
                         status("connected", remote_python=message.get("python", ""), self_test=message.get("self_test", False),
                                read_only=message.get("read_only", False))
-                        if interactive:
+                        if interactive and not gui:
                             console_visible(False)
                     elif message.get("kind") in {"event", "batch"}:
                         epoch = message["epoch"]
@@ -301,6 +310,10 @@ def receive(host, root, interactive=False):
                 if child and child.poll() is None:
                     child.terminate()
                     child.wait(timeout=5)
+                if gui:
+                    # Cancelling or losing a connection must not cause repeated
+                    # password popups. Retry is an explicit action in the pet.
+                    return
                 if interactive:
                     console_visible(True)
                     print(f"{host}：连接已断开。按 Enter 后在 OpenSSH 提示里重新输入密码，Ctrl+C 停止。", flush=True)
@@ -320,7 +333,14 @@ def receive(host, root, interactive=False):
 
 def _exchange(host, request, interactive=False):
     payload = (json.dumps(request)+"\n").encode()
-    if interactive:
+    if interactive and os.name == "nt":
+        from naiwa.askpass import environment
+        arguments = ssh_arguments(host, True)
+        arguments[1:1] = ["-o", "NumberOfPasswordPrompts=1"]
+        completed = subprocess.run(arguments, input=payload, stdout=subprocess.PIPE,
+                                   stderr=subprocess.DEVNULL, timeout=180,
+                                   env=environment(host, ssh_env()), creationflags=subprocess.CREATE_NO_WINDOW)
+    elif interactive:
         completed = subprocess.run(ssh_arguments(host, True), input=payload,
                                    stdout=subprocess.PIPE, stderr=None, timeout=180, env=ssh_env())
     else:
@@ -385,7 +405,7 @@ def uninstall_host(host, root=None, interactive=False):
         atomic_json(path, {"hosts": hosts})
 
 
-def start_configured(root):
+def start_configured(root, only_host=None):
     path = runtime_dir(root)/"remotes.json"
     if not path.exists():
         return
@@ -394,6 +414,8 @@ def start_configured(root):
         if not isinstance(entry, dict):
             continue
         host = entry.get("host", "")
+        if only_host is not None and host != only_host:
+            continue
         try:
             identity = host_id(host)
         except ValueError:
@@ -408,8 +430,63 @@ def start_configured(root):
         interactive = entry.get("interactive") is True
         if interactive:
             args += ["--interactive"]
-        flags = (subprocess.CREATE_NEW_CONSOLE if interactive else subprocess.CREATE_NO_WINDOW) if os.name == "nt" else 0
+            if os.name == "nt":
+                args += ["--gui"]
+        flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
         subprocess.Popen(args, creationflags=flags)
+
+
+def stop_local_receiver(root, host):
+    """Explicit UI action: stop only a verified local listener and its SSH child.
+
+    Validate process creation time and executable against the local health record
+    before terminating, so a stale PID cannot kill a later unrelated process.
+    """
+    if os.name != "nt":
+        raise OSError("This control requires Windows")
+    import ctypes
+    from ctypes import wintypes as w
+    from naiwa.hosts import _processes
+    record = json.loads((runtime_dir(root)/("remote-"+host_id(host)+"-health.json")).read_text(encoding="utf-8"))
+    pid, stamp = record.get("pid"), record.get("ts")
+    if record.get("host") != host or type(pid) is not int or pid <= 0 or pid == os.getpid() or type(stamp) not in (int, float):
+        raise OSError("Listener identity unavailable")
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel.OpenProcess.argtypes = [w.DWORD, w.BOOL, w.DWORD]
+    kernel.OpenProcess.restype = w.HANDLE
+    kernel.GetProcessTimes.argtypes = [w.HANDLE]+[ctypes.POINTER(w.FILETIME)]*4
+    kernel.QueryFullProcessImageNameW.argtypes = [w.HANDLE, w.DWORD, w.LPWSTR, ctypes.POINTER(w.DWORD)]
+    kernel.TerminateProcess.argtypes = [w.HANDLE, w.UINT]
+    kernel.WaitForSingleObject.argtypes = [w.HANDLE, w.DWORD]
+    kernel.CloseHandle.argtypes = [w.HANDLE]
+    handle = kernel.OpenProcess(0x101001, False, pid)
+    if not handle:
+        return
+    try:
+        created, exited, system, user = (w.FILETIME() for _ in range(4))
+        image, size = ctypes.create_unicode_buffer(32768), w.DWORD(32768)
+        if not kernel.GetProcessTimes(handle, ctypes.byref(created), ctypes.byref(exited), ctypes.byref(system), ctypes.byref(user)):
+            raise OSError("Cannot verify listener process")
+        birth = ((created.dwHighDateTime << 32)+created.dwLowDateTime)/10_000_000-11_644_473_600
+        if birth > stamp+1 or not kernel.QueryFullProcessImageNameW(handle, 0, image, ctypes.byref(size)):
+            raise OSError("Listener process no longer matches its record")
+        if Path(image.value).resolve() != Path(sys.executable).with_name("python.exe").resolve():
+            raise OSError("Listener executable does not match")
+        for child_pid, (parent, name) in _processes().items():
+            if parent != pid or name != "ssh.exe":
+                continue
+            child = kernel.OpenProcess(0x101001, False, child_pid)
+            if child:
+                try:
+                    kernel.TerminateProcess(child, 0)
+                    kernel.WaitForSingleObject(child, 500)
+                finally:
+                    kernel.CloseHandle(child)
+        if not kernel.TerminateProcess(handle, 0):
+            raise OSError("Could not stop listener")
+        kernel.WaitForSingleObject(handle, 1000)
+    finally:
+        kernel.CloseHandle(handle)
 
 
 def main(argv=None):
@@ -420,6 +497,7 @@ def main(argv=None):
     parser.add_argument("--root", default="")
     parser.add_argument("--data-dir", type=Path)
     parser.add_argument("--interactive", action="store_true")
+    parser.add_argument("--gui", action="store_true", help="Use Naiwa's OpenSSH login card")
     args = parser.parse_args(argv)
     if args.remote_command == "install":
         if not args.workspace:
@@ -427,13 +505,14 @@ def main(argv=None):
         install_host(args.host, args.workspace, args.root, args.data_dir, interactive=args.interactive)
         print(f"已准备 {args.host} 上的 {args.workspace}。监听随奶蛙启动，不保存服务器路径。")
         if args.interactive:
-            print("启动奶蛙时会弹出一个本机窗口。在那里输入一次服务器密码，这条连接保持到奶蛙退出。")
+            print("需要认证时会显示奶蛙登录卡片。连接状态和重试入口在托盘菜单“SSH 连接”中。")
         return 0
     if args.remote_command == "uninstall":
         uninstall_host(args.host, args.data_dir, interactive=args.interactive)
         print(f"已移除 {args.host} 上奶蛙自己的钩子。")
         return 0
-    receive(args.host, args.data_dir, args.interactive)
+    receive(args.host, args.data_dir, args.interactive or args.gui,
+            gui=args.gui or (os.name == "nt" and args.interactive))
     return 0
 
 
